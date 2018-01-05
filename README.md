@@ -1,3 +1,3 @@
-# Authentication component
+# Htpasswd adapter for octris authentication component
 
 ...
