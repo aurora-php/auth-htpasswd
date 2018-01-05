@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the 'octris/core' package.
+ * This file is part of the 'octris/auth' package.
  *
  * (c) Harald Lapp <harald@octris.org>
  *
@@ -9,17 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace Octris\Core\Auth\Adapter;
+namespace Octris\Auth\Adapter;
 
 /**
  * Allows authentication against a htpasswd file. The encryptions supported
  * are SHA1 and crypt. This class (currently) does not(!) support
  * plain-text passwords.
  *
- * @copyright   copyright (c) 2011-2014 by Harald Lapp
+ * @copyright   copyright (c) 2011-2018 by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
-class Htpasswd implements \Octris\Core\Auth\IAdapter
+class Htpasswd implements \Octris\Auth\AdapterInterface
 {
     /**
      * Username to authenticate with adapter.
@@ -79,11 +79,11 @@ class Htpasswd implements \Octris\Core\Auth\IAdapter
     /**
      * Authenticate.
      *
-     * @return  \Octris\Core\Auth\Identity                  Instance of identity class.
+     * @return  \Octris\Auth\Identity                  Instance of identity class.
      */
     public function authenticate()
     {
-        $result = \Octris\Core\Auth::AUTH_FAILURE;
+        $result = \Octris\Auth::AUTH_FAILURE;
 
         if (empty($this->username)) {
             throw new \Exception('Username cannot be empty');
@@ -95,12 +95,12 @@ class Htpasswd implements \Octris\Core\Auth\IAdapter
         if (!($fp = fopen($this->file, 'r'))) {
             throw new \Exception(sprintf('Unable to read file "%s"', $this->file));
         } else {
-            $result = \Octris\Core\Auth::IDENTITY_UNKNOWN;
+            $result = \Octris\Auth::IDENTITY_UNKNOWN;
 
             while (!feof($fp)) {
                 if ((list($username, $password) = fgetcsv($fp, 512, ':')) && $username == $this->username) {
-                    if ($result != \Octris\Core\Auth::IDENTITY_UNKNOWN) {
-                        $result = \Octris\Core\Auth::IDENTITY_AMBIGUOUS;
+                    if ($result != \Octris\Auth::IDENTITY_UNKNOWN) {
+                        $result = \Octris\Auth::IDENTITY_AMBIGUOUS;
                         break;
                     } else {
                         if (preg_match('/^\{SHA\}(.+)$/', $password, $match)) {
@@ -111,9 +111,9 @@ class Htpasswd implements \Octris\Core\Auth\IAdapter
                         }
 
                         if ($test === $password) {
-                            $result = \Octris\Core\Auth::AUTH_SUCCESS;
+                            $result = \Octris\Auth::AUTH_SUCCESS;
                         } else {
-                            $result = \Octris\Core\Auth::CREDENTIAL_INVALID;
+                            $result = \Octris\Auth::CREDENTIAL_INVALID;
                         }
                     }
                 }
@@ -122,7 +122,7 @@ class Htpasswd implements \Octris\Core\Auth\IAdapter
             fclose($fp);
         }
 
-        return new \Octris\Core\Auth\Identity(
+        return new \Octris\Auth\Identity(
             $result,
             array(
                 'username' => $this->username
